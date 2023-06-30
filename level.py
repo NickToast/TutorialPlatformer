@@ -4,6 +4,7 @@ import pygame
 from tiles import Tile
 from settings import tile_size, screen_width
 from player import Player
+from particles import ParticleEffect
 
 class Level:
     def __init__(self, level_data, surface):
@@ -12,6 +13,20 @@ class Level:
         self.setup_level(level_data)
         self.world_shift = 0
         self.current_x = 0
+
+        #dust
+        self.dust_sprite = pygame.sprite.GroupSingle() #only need one because its jumping or landing, cannot do both same time
+
+    #to get position, we must create the ParticleEffect class inside the level.py file
+    #because only in here can we use the world_shift argument
+    #thus both landing and jumping particle effects must be inside level
+    def create_jump_particles(self, pos):
+        if self.player.sprite.facing_right:
+            pos -= pygame.math.Vector2(10,5)
+        else:
+            pos += pygame.math.Vector2(10,-5)
+        jump_particle_sprite = ParticleEffect(pos, 'jump') #pos will be given from the pos that is passed into the argument
+        self.dust_sprite.add(jump_particle_sprite)
 
     def setup_level(self, layout):
         self.tiles = pygame.sprite.Group()
@@ -27,7 +42,7 @@ class Level:
                     tile = Tile((x,y), tile_size) #pos, size
                     self.tiles.add(tile)
                 if cell == 'P':
-                    player_sprite = Player((x,y), self.display_surface)
+                    player_sprite = Player((x,y), self.display_surface, self.create_jump_particles)
                     self.player.add(player_sprite)
 
     def scroll_x(self):
@@ -45,6 +60,10 @@ class Level:
             player.speed = 8
 
     def run(self):
+        #dust particles, place behind the tiles, and it looks much better
+        self.dust_sprite.update(self.world_shift)
+        self.dust_sprite.draw(self.display_surface)
+
         #level tiles
         self.tiles.update(self.world_shift) #later when we have a player, we will change our argument to move to tiles based on player movement
         self.tiles.draw(self.display_surface)
@@ -55,6 +74,7 @@ class Level:
         self.horizontal_movement_collision()
         self.vertical_movement_collision()
         self.player.draw(self.display_surface)
+
 
     def horizontal_movement_collision(self):
         player = self.player.sprite
