@@ -37,9 +37,9 @@ class Level:
     def create_landing_dust(self):
         if not self.player_on_ground and self.player.sprite.on_ground and not self.dust_sprite.sprites(): #small chance that this animation might play several times, which would look bad
             if self.player.sprite.facing_right:
-                offset = pygame.math.Vector2(0,0)
+                offset = pygame.math.Vector2(10,15)
             else:
-                offset = pygame.math.Vector2(0,0)
+                offset = pygame.math.Vector2(-10,15)
             fall_dust_particle = ParticleEffect(self.player.sprite.rect.midbottom - offset, 'land')
             self.dust_sprite.add(fall_dust_particle)
 
