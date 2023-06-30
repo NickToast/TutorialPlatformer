@@ -16,7 +16,7 @@ class Level:
 
         #dust
         self.dust_sprite = pygame.sprite.GroupSingle() #only need one because its jumping or landing, cannot do both same time
-
+        self.player_on_ground = False
     #to get position, we must create the ParticleEffect class inside the level.py file
     #because only in here can we use the world_shift argument
     #thus both landing and jumping particle effects must be inside level
@@ -27,6 +27,21 @@ class Level:
             pos += pygame.math.Vector2(10,-5)
         jump_particle_sprite = ParticleEffect(pos, 'jump') #pos will be given from the pos that is passed into the argument
         self.dust_sprite.add(jump_particle_sprite)
+
+    def get_player_on_ground(self):
+        if self.player.sprite.on_ground:
+            self.player_on_ground = True #create new attribute
+        else:
+            self.player_on_ground = False #this means player is in the air
+
+    def create_landing_dust(self):
+        if not self.player_on_ground and self.player.sprite.on_ground and not self.dust_sprite.sprites(): #small chance that this animation might play several times, which would look bad
+            if self.player.sprite.facing_right:
+                offset = pygame.math.Vector2(0,0)
+            else:
+                offset = pygame.math.Vector2(0,0)
+            fall_dust_particle = ParticleEffect(self.player.sprite.rect.midbottom - offset, 'land')
+            self.dust_sprite.add(fall_dust_particle)
 
     def setup_level(self, layout):
         self.tiles = pygame.sprite.Group()
@@ -72,7 +87,10 @@ class Level:
         #player
         self.player.update()
         self.horizontal_movement_collision()
+        self.get_player_on_ground() #before any vertical collision occurs, we want to know if the player is on the ground or not
         self.vertical_movement_collision()
+        self.create_landing_dust() #must come after the vertical movement collision
+        #first player on ground, second, vertical collision, if there is a difference between the two after we run the collision, we know player has landed
         self.player.draw(self.display_surface)
 
 
